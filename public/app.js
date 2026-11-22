@@ -603,15 +603,18 @@ async function openFolderModal(folderId) {
             ${tagsHtml}
           </div>
 
-          <!-- Кнопки: Скопировать текст / Экспортировать эту часть 1-2 мин в отдельный видеофайл -->
+          <!-- Кнопки: Скопировать текст / Смотреть / Скачать для TikTok -->
           <div class="grid grid-cols-2 gap-2 pt-1">
             <button onclick="copyClipText(${idx})" data-copy="${encodeURIComponent(copyPayload)}" id="copyBtn_${idx}" class="py-2.5 px-3 rounded-2xl bg-cyan-500/15 hover:bg-cyan-500/25 active:scale-95 border border-cyan-500/30 text-cyan-300 text-xs font-bold flex items-center justify-center gap-1.5">
-              <span>📋 Скопировать описание</span>
+              <span>📋 Описание</span>
             </button>
-            <button onclick="playFullPart(${idx})" class="py-2.5 px-3 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
-              <span>▶️ Смотреть (${formatDurationLabel(clip.durationSec)})</span>
+            <button onclick="playFullPart(${idx})" class="py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 border border-white/15 text-white text-xs font-bold flex items-center justify-center gap-1.5">
+              <span>▶️ Смотреть</span>
             </button>
           </div>
+          <button onclick="downloadPartForTikTok(${idx})" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-400 hover:to-cyan-500 active:scale-[0.98] text-slate-950 text-xs font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+            <span>⬇️ Скачать Часть #${idx + 1} для TikTok (${formatDurationLabel(clip.durationSec)})</span>
+          </button>
         </article>
       `;
     })
@@ -681,6 +684,197 @@ window.playFullPart = function (idx) {
   const startSec = Number(video.getAttribute("data-start")) || 0;
   video.currentTime = startSec;
   video.play();
+};
+
+// ============================================================================
+// Экспорт и скачивание части (1–2 мин) для TikTok со звуком, субтитрами и без баннеров
+// ============================================================================
+
+window.downloadPartForTikTok = async function (idx) {
+  const video = document.getElementById(`partVideo_${idx}`);
+  if (!video) {
+    showToast("❌ Видеопоток недоступен");
+    return;
+  }
+
+  const folders = await getAllFoldersFromDB();
+  const folder = folders.find((f) => f.id === currentOpenFolderId);
+  const clip = folder && folder.clips && folder.clips[idx];
+  if (!clip) return;
+
+  const startSec = Number(clip.startSec) || 0;
+  const endSec = Number(clip.endSec) || startSec + 90;
+  const partDur = Math.max(1, endSec - startSec);
+  const subs = Array.isArray(clip.subtitles) && clip.subtitles.length > 0
+    ? clip.subtitles
+    : buildPartSubtitles(folder.folderTitle, idx + 1, startSec, endSec);
+  const subtitleStyle = clip.subtitleStyle || "hormozi";
+  const removeBanners = clip.bannersRemoved !== false;
+
+  const overlay = document.getElementById("exportOverlay");
+  const exportTitle = document.getElementById("exportTitle");
+  const exportSubtext = document.getElementById("exportSubtext");
+  const exportBar = document.getElementById("exportBar");
+  const exportPercent = document.getElementById("exportPercent");
+  const cancelBtn = document.getElementById("cancelExportBtn");
+
+  overlay.classList.remove("hidden");
+  exportTitle.textContent = `Готовим Часть #${idx + 1} для TikTok...`;
+  exportSubtext.textContent = "Вшиваем субтитры, срезаем баннеры и сохраняем звук (можно нажать «Сохранить что готово» в любой момент).";
+  exportBar.style.width = "0%";
+  exportPercent.textContent = "0%";
+
+  // Настраиваем Canvas для записи (720x405 или 480x270)
+  const canvas = document.createElement("canvas");
+  canvas.width = 640;
+  canvas.height = 360;
+  const ctx = canvas.getContext("2d");
+
+  const mimeType = MediaRecorder.isTypeSupported("video/mp4")
+    ? "video/mp4"
+    : MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+    ? "video/webm;codecs=vp8,opus"
+    : "video/webm";
+  const ext = mimeType.includes("mp4") ? "mp4" : "webm";
+
+  const stream = canvas.captureStream(25);
+
+  // Пытаемся захватить звук из видеоэлемента
+  try {
+    const vStream = typeof video.captureStream === "function"
+      ? video.captureStream()
+      : typeof video.mozCaptureStream === "function"
+      ? video.mozCaptureStream()
+      : null;
+    if (vStream) {
+      vStream.getAudioTracks().forEach((track) => stream.addTrack(track));
+    }
+  } catch (e) {
+    // Если CORS или браузер блокирует захват аудио, пишем видеодорожку
+  }
+
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 1500000
+  });
+  const chunks = [];
+  recorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) chunks.push(e.data);
+  };
+
+  let stopped = false;
+  let rafId = null;
+
+  const finishAndDownload = () => {
+    if (stopped) return;
+    stopped = true;
+    if (rafId) cancelAnimationFrame(rafId);
+    video.pause();
+    video.playbackRate = 1.0;
+
+    if (recorder.state !== "inactive") {
+      recorder.stop();
+    }
+  };
+
+  recorder.onstop = () => {
+    overlay.classList.add("hidden");
+    const blob = new Blob(chunks, { type: mimeType });
+    if (blob.size < 1000) {
+      showToast("❌ Не удалось записать фрагмент");
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `TikTok_Part_${idx + 1}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    showToast(`✅ Часть #${idx + 1} (${formatSizeMB(blob.size)}) скачана для TikTok!`);
+  };
+
+  cancelBtn.onclick = () => {
+    finishAndDownload();
+  };
+
+  // Ставим видео на старт части и запускаем запись
+  video.currentTime = startSec;
+  await new Promise((r) => {
+    const onSeeked = () => {
+      video.removeEventListener("seeked", onSeeked);
+      r();
+    };
+    video.addEventListener("seeked", onSeeked);
+    setTimeout(r, 400);
+  });
+
+  recorder.start(500);
+  video.playbackRate = 1.0;
+  try {
+    await video.play();
+  } catch (e) {
+    // Fallback if autoplay blocked
+  }
+
+  const renderLoop = () => {
+    if (stopped) return;
+    const elapsed = Math.max(0, video.currentTime - startSec);
+    const pct = Math.min(100, (elapsed / partDur) * 100);
+    exportBar.style.width = `${Math.round(pct)}%`;
+    exportPercent.textContent = `${Math.round(pct)}% (${formatTime(elapsed)} / ${formatTime(partDur)})`;
+
+    const srcW = video.videoWidth || 640;
+    const srcH = video.videoHeight || 360;
+    if (removeBanners) {
+      ctx.drawImage(video, srcW * 0.08, srcH * 0.12, srcW * 0.84, srcH * 0.74, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+
+    // Нижняя тень под субтитры
+    const grad = ctx.createLinearGradient(0, canvas.height * 0.65, 0, canvas.height);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(1, "rgba(0,0,0,0.82)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, canvas.height * 0.65, canvas.width, canvas.height * 0.35);
+
+    // Субтитры
+    const subIndex = Math.min(subs.length - 1, Math.floor((elapsed / partDur) * subs.length));
+    const subText = subs[subIndex] || "";
+    if (subText) {
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.font = "900 20px -apple-system, BlinkMacSystemFont, sans-serif";
+      const y = canvas.height - 28;
+      if (subtitleStyle === "cyber") {
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#090d16";
+        ctx.strokeText(subText, canvas.width / 2, y);
+        ctx.fillStyle = "#22d3ee";
+        ctx.fillText(subText, canvas.width / 2, y);
+      } else if (subtitleStyle === "cinema") {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(subText, canvas.width / 2, y);
+      } else {
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#000000";
+        ctx.strokeText(subText.toUpperCase(), canvas.width / 2, y);
+        ctx.fillStyle = "#fde047";
+        ctx.fillText(subText.toUpperCase(), canvas.width / 2, y);
+      }
+      ctx.restore();
+    }
+
+    if (video.currentTime >= endSec || video.ended) {
+      finishAndDownload();
+      return;
+    }
+    rafId = requestAnimationFrame(renderLoop);
+  };
+
+  rafId = requestAnimationFrame(renderLoop);
 };
 
 window.copyClipText = function (idx) {

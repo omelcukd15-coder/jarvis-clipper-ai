@@ -6,9 +6,11 @@
   <meta name="theme-color" content="#090d16" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>JARVIS Clipper AI — Нарезка серий на части по 1–2 минуты</title>
+  <title>JARVIS Clipper AI — Нарезка серий для TikTok (1–2 мин)</title>
   <link rel="manifest" href="./manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- MP4Box.js для мгновенного lossless-разрезания MP4 без перекодирования -->
+  <script src="https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js"></script>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body class="bg-[#090d16] text-slate-100 min-h-screen select-none pb-28">
@@ -24,10 +26,10 @@
       </div>
       <div>
         <div class="flex items-center gap-1.5">
-          <h1 class="font-bold text-base tracking-tight text-white">JARVIS Clipper</h1>
-          <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">ЧАСТИ 1–2 МИН</span>
+          <h1 class="font-bold text-base tracking-tight text-white">JARVIS TikTok</h1>
+          <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">СКАЧИВАНИЕ 1–2 МИН</span>
         </div>
-        <p class="text-[11px] text-slate-400">Нарезка серий по порядку • Субтитры • Без баннеров</p>
+        <p class="text-[11px] text-slate-400">Нарезка серий для TikTok • Субтитры • Без баннеров</p>
       </div>
     </div>
 
@@ -54,7 +56,7 @@
           </svg>
         </div>
         <div class="text-xs leading-relaxed text-slate-300">
-          <span class="font-semibold text-emerald-300">Нарезка на полноценные части (1–2 мин):</span> Видео делится подряд на части (`Часть 1`, `Часть 2`, `Часть 3`...) <span class="text-amber-300 font-semibold">длительностью строго от 1 до 2 минут со звуком</span>, субтитрами и срезом рекламных баннеров.
+          <span class="font-semibold text-emerald-300">Готово для залива в TikTok:</span> Делит серию на части по 1–2 минуты и позволяет <span class="text-amber-300 font-semibold">скачать каждую часть на телефон</span> (мгновенная нарезка со звуком или рендер в 9:16 с вшитыми субтитрами и без баннеров).
         </div>
       </div>
 
@@ -67,7 +69,7 @@
           </svg>
         </div>
         <h2 class="text-base font-bold text-white mb-1">Закинуть серию / фильм / видео</h2>
-        <p class="text-xs text-slate-400 mb-4">Разделит всё видео на части по 1–2 минуты подряд</p>
+        <p class="text-xs text-slate-400 mb-4">Разделит на части по 1–2 минуты для скачивания в TikTok</p>
         <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25">
           <span>Выбрать видео из галереи</span>
         </div>
@@ -104,9 +106,9 @@
         </div>
       </div>
 
-      <!-- Быстрый Демо-режим (настоящее видео на 6 частей по 1:30 мин) -->
+      <!-- Быстрый Демо-режим -->
       <button id="demoBtn" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-blue-500/15 hover:from-amber-500/25 hover:to-blue-500/25 active:scale-[0.99] border border-cyan-500/30 text-xs font-bold text-cyan-200 flex items-center justify-center gap-2 transition shadow-lg">
-        <span>🎬 Открыть пример: Серия разделена на части по 1.5 мин</span>
+        <span>🎬 Открыть пример: Серия на 6 частей по 1.5 мин (со скачиванием)</span>
       </button>
 
       <!-- ПРОГРЕСС-БАР АВТОНАРЕЗКИ -->
@@ -127,7 +129,7 @@
           Создаем части со звуком, субтитрами, описанием и хештегами...
         </p>
 
-        <video id="hiddenWorkerVideo" class="hidden" playsinline muted></video>
+        <video id="hiddenWorkerVideo" class="hidden" playsinline muted crossorigin="anonymous"></video>
       </div>
     </section>
 
@@ -136,7 +138,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-white">Меню папок с нарезками</h2>
-          <p class="text-xs text-slate-400">Откройте папку, чтобы смотреть все части по 1–2 минуты</p>
+          <p class="text-xs text-slate-400">Откройте папку, чтобы скачать части для TikTok или удалить её</p>
         </div>
         <span id="foldersCountBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">0 папок</span>
       </div>
@@ -158,7 +160,7 @@
 
       <div class="flex-1 min-w-0 text-center">
         <h3 id="modalFolderTitle" class="text-sm font-bold text-white truncate">Название папки</h3>
-        <p id="modalFolderMeta" class="text-[11px] text-emerald-400">Все части по 1–2 мин • Без баннеров • Субтитры</p>
+        <p id="modalFolderMeta" class="text-[11px] text-emerald-400">Все части по 1–2 мин • Готово к скачиванию в TikTok</p>
       </div>
 
       <button id="deleteCurrentFolderBtn" class="p-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 active:scale-95 text-xs font-semibold flex items-center gap-1">
@@ -172,8 +174,30 @@
     <div id="modalClipsContainer" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24"></div>
   </div>
 
+  <!-- МОДАЛЬНОЕ ОКНО ЭКСПОРТА / СКАЧИВАНИЯ ВИДЕО ДЛЯ TIKTOK -->
+  <div id="exportOverlay" class="fixed inset-0 z-[60] hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-slate-900 border border-cyan-500/40 p-5 space-y-4 text-center shadow-2xl">
+      <div class="w-12 h-12 mx-auto rounded-2xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+        <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </div>
+      <h4 id="exportTitle" class="text-base font-bold text-white">Готовим видео для TikTok...</h4>
+      <p id="exportSubtext" class="text-xs text-slate-300 leading-relaxed">
+        Вшиваем субтитры, срезаем рекламные баннеры и сохраняем звук...
+      </p>
+      <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
+        <div id="exportBar" class="h-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 transition-all duration-200" style="width: 0%"></div>
+      </div>
+      <div class="flex items-center justify-between text-xs">
+        <span id="exportPercent" class="font-bold text-cyan-300">0%</span>
+        <button id="cancelExportBtn" class="px-3 py-1.5 rounded-xl bg-red-500/20 text-red-300 font-semibold">Отмена / Сохранить что готово</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Всплывающее уведомление (Toast) -->
-  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-cyan-400/40 text-white text-xs font-semibold shadow-2xl whitespace-nowrap"></div>
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[70] hidden px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-cyan-400/40 text-white text-xs font-semibold shadow-2xl whitespace-nowrap"></div>
 
   <!-- Нижняя мобильная навигация -->
   <nav class="fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl bg-[#090d16]/90 border-t border-white/10 px-6 py-2 flex items-center justify-around max-w-md mx-auto">
