@@ -1,0 +1,15 @@
+name = "jarvis-clipper"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "public"
+
+[ai]
+binding = "AI"
+
+# При подключении Cloudflare R2 и KV раскомментируйте:
+# [[r2_buckets]]
+# binding = "CLIPS_BUCKET"
+# bucket_name = "jarvis-clips"
+
+# [[kv_namespaces]]
+# binding = "PROJECTS_KV"
+# id = "YOUR_KV_ID"

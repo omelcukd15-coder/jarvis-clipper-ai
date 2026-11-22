@@ -1,0 +1,10 @@
+{
+  "name": "JARVIS Clipper AI",
+  "short_name": "Clipper AI",
+  "description": "Авто-нарезка длинных видео на 1-2 минутные клипы без рекламы с автоочисткой",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "portrait"
+}

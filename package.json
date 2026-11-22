@@ -1,0 +1,13 @@
+{
+  "name": "jarvis-clipper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Video Clipper with Auto-Cleanup & Cloudflare Backend",
+  "scripts": {
+    "dev": "npx wrangler pages dev public",
+    "deploy": "npx wrangler pages deploy public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.80.0"
+  }
+}

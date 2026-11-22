@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>JARVIS Clipper AI — Автонарезка с субтитрами и без баннеров</title>
+  <link rel="manifest" href="./manifest.json" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen select-none pb-28">
+
+  <!-- Верхний мобильный бар (App Header) -->
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-[#090d16]/85 border-b border-white/10 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <h1 class="font-bold text-base tracking-tight text-white">JARVIS Clipper</h1>
+          <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">SUBS + AD-CLEAN</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Авто-субтитры • Срез баннеров • 1–2 мин</p>
+      </div>
+    </div>
+
+    <!-- Индикатор памяти + быстрая очистка -->
+    <button id="clearAllBtn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-red-500/15 active:scale-95 border border-white/10 transition text-xs text-slate-300">
+      <span id="storageBadge" class="font-medium text-cyan-400">0 МБ</span>
+      <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </button>
+  </header>
+
+  <!-- Основной контейнер мобильного приложения -->
+  <main class="max-w-md mx-auto px-4 pt-4 space-y-5">
+
+    <!-- СЕКЦИЯ 1: ЗАГРУЗКА И АВТОНАРЕЗКА -->
+    <section id="tabUpload" class="space-y-4">
+
+      <!-- Баннер возможностей -->
+      <div class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10 border border-emerald-500/25 flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div class="text-xs leading-relaxed text-slate-300">
+          <span class="font-semibold text-emerald-300">Полный автомат:</span> ИИ режет 2-часовое видео на части по 1–2 мин, <span class="text-amber-300 font-semibold">накладывает красивые субтитры</span>, <span class="text-cyan-300 font-semibold">обрезает рекламные баннеры</span> и сразу удаляет тяжелый исходник.
+        </div>
+      </div>
+
+      <!-- Карточка выбора видео с телефона -->
+      <label for="videoInput" id="dropZone" class="block cursor-pointer rounded-3xl border-2 border-dashed border-cyan-500/40 bg-gradient-to-b from-slate-900/90 to-slate-900/40 p-6 text-center active:scale-[0.99] transition relative overflow-hidden">
+        <input id="videoInput" type="file" accept="video/*" class="hidden" />
+        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-inner">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
+        <h2 class="text-base font-bold text-white mb-1">Закинуть видео с телефона</h2>
+        <p class="text-xs text-slate-400 mb-4">Любой размер (2+ часа) • Авто-субтитры и очистка баннеров</p>
+        <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25">
+          <span>Выбрать видео из галереи</span>
+        </div>
+      </label>
+
+      <!-- Настройки автонарезки, субтитров и удаления баннеров -->
+      <div class="rounded-2xl bg-slate-900/80 border border-white/10 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">Количество нарезок</span>
+          <select id="clipCountSelect" class="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/10 focus:outline-none">
+            <option value="3">3 лучших клипа</option>
+            <option value="5" selected>5 лучших клипов</option>
+            <option value="8">8 лучших клипов</option>
+            <option value="10">10 лучших клипов</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">Длительность клипа</span>
+          <select id="clipDurationSelect" class="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/10 focus:outline-none">
+            <option value="60-120" selected>1 – 2 минуты</option>
+            <option value="30-60">30 – 60 сек (Shorts/Reels)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300">Стиль ИИ-субтитров</span>
+          <select id="subtitleStyleSelect" class="bg-slate-800 text-amber-300 text-xs font-semibold rounded-xl px-3 py-1.5 border border-amber-500/30 focus:outline-none">
+            <option value="hormozi" selected>🔥 TikTok / Hormozi (Желтый неон)</option>
+            <option value="cyber">💎 Cyber Jarvis (Голубой неон)</option>
+            <option value="cinema">🎬 Cinema Clean (Белый с тенью)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-white/5">
+          <span class="text-xs text-slate-300">Удаление рекламных баннеров (Smart Crop + Mask)</span>
+          <label class="inline-flex items-center cursor-pointer">
+            <input id="removeBannersToggle" type="checkbox" checked class="sr-only peer" />
+            <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:bg-emerald-500 relative transition">
+              <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 peer-checked:translate-x-4 transition"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Быстрый Демо-режим -->
+      <button id="demoBtn" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-blue-500/15 hover:from-amber-500/25 hover:to-blue-500/25 active:scale-[0.99] border border-cyan-500/30 text-xs font-bold text-cyan-200 flex items-center justify-center gap-2 transition shadow-lg">
+        <span>⚡ Запустить демо-нарезку (с живыми субтитрами и без баннеров)</span>
+      </button>
+
+      <!-- ПРОГРЕСС-БАР АВТОНАРЕЗКИ И УДАЛЕНИЯ ИСХОДНИКА -->
+      <div id="processCard" class="hidden rounded-3xl bg-slate-900 border border-cyan-500/30 p-5 space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
+            <h3 id="processStage" class="text-sm font-bold text-white">Анализ видео и удаление баннеров...</h3>
+          </div>
+          <span id="processPercent" class="text-xs font-bold text-cyan-400">0%</span>
+        </div>
+
+        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div id="processBar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <p id="processSubtext" class="text-xs text-slate-400 leading-relaxed">
+          ИИ срезает рекламные плашки, вшивает субтитры, генерирует описание и хештеги...
+        </p>
+
+        <video id="hiddenWorkerVideo" class="hidden" playsinline muted></video>
+      </div>
+    </section>
+
+    <!-- СЕКЦИЯ 2: МЕНЮ ПАПОК С НАРЕЗКАМИ -->
+    <section id="tabMenu" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Меню папок с нарезками</h2>
+          <p class="text-xs text-slate-400">Откройте папку для просмотра или удалите её в 1 тап</p>
+        </div>
+        <span id="foldersCountBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">0 папок</span>
+      </div>
+
+      <div id="foldersList" class="space-y-3"></div>
+    </section>
+
+  </main>
+
+  <!-- МОДАЛЬНОЕ ОКНО ОТКРЫТОЙ ПАПКИ С НАРЕЗКАМИ -->
+  <div id="folderModal" class="fixed inset-0 z-50 hidden bg-[#090d16] flex flex-col">
+    <div class="px-4 py-3.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+      <button id="closeModalBtn" class="p-2 -ml-1 rounded-xl bg-white/5 text-slate-200 active:scale-95 flex items-center gap-1.5 text-xs font-semibold">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>В меню</span>
+      </button>
+
+      <div class="flex-1 min-w-0 text-center">
+        <h3 id="modalFolderTitle" class="text-sm font-bold text-white truncate">Название папки</h3>
+        <p id="modalFolderMeta" class="text-[11px] text-emerald-400">Оригинал удалён • Баннеры срезаны • Субтитры</p>
+      </div>
+
+      <button id="deleteCurrentFolderBtn" class="p-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 active:scale-95 text-xs font-semibold flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Удалить</span>
+      </button>
+    </div>
+
+    <div id="modalClipsContainer" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24"></div>
+  </div>
+
+  <!-- Всплывающее уведомление (Toast) -->
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-cyan-400/40 text-white text-xs font-semibold shadow-2xl whitespace-nowrap"></div>
+
+  <!-- Нижняя мобильная навигация -->
+  <nav class="fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl bg-[#090d16]/90 border-t border-white/10 px-6 py-2 flex items-center justify-around max-w-md mx-auto">
+    <button id="navUploadBtn" class="flex flex-col items-center gap-1 py-1 text-cyan-400 font-semibold text-xs">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Загрузить</span>
+    </button>
+
+    <button id="navMenuBtn" class="flex flex-col items-center gap-1 py-1 text-slate-400 font-semibold text-xs relative">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+      </svg>
+      <span>Меню нарезок</span>
+      <span id="navBadge" class="hidden absolute -top-0.5 right-2 w-4 h-4 rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950 flex items-center justify-center">0</span>
+    </button>
+  </nav>
+
+  <script src="./app.js"></script>
+</body>
+</html>
