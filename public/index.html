@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#090d16" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>JARVIS Clipper AI — Автонарезка с субтитрами и без баннеров</title>
+  <title>JARVIS Clipper AI — Нарезка серий на части по 1–2 минуты</title>
   <link rel="manifest" href="./manifest.json" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./styles.css" />
@@ -25,9 +25,9 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-bold text-base tracking-tight text-white">JARVIS Clipper</h1>
-          <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">SUBS + AD-CLEAN</span>
+          <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">ЧАСТИ 1–2 МИН</span>
         </div>
-        <p class="text-[11px] text-slate-400">Авто-субтитры • Срез баннеров • 1–2 мин</p>
+        <p class="text-[11px] text-slate-400">Нарезка серий по порядку • Субтитры • Без баннеров</p>
       </div>
     </div>
 
@@ -43,7 +43,7 @@
   <!-- Основной контейнер мобильного приложения -->
   <main class="max-w-md mx-auto px-4 pt-4 space-y-5">
 
-    <!-- СЕКЦИЯ 1: ЗАГРУЗКА И АВТОНАРЕЗКА -->
+    <!-- СЕКЦИЯ 1: ЗАГРУЗКА И АВТОНАРЕЗКА СЕРИИ НА ЧАСТИ -->
     <section id="tabUpload" class="space-y-4">
 
       <!-- Баннер возможностей -->
@@ -54,7 +54,7 @@
           </svg>
         </div>
         <div class="text-xs leading-relaxed text-slate-300">
-          <span class="font-semibold text-emerald-300">Полный автомат:</span> ИИ режет 2-часовое видео на части по 1–2 мин, <span class="text-amber-300 font-semibold">накладывает красивые субтитры</span>, <span class="text-cyan-300 font-semibold">обрезает рекламные баннеры</span> и сразу удаляет тяжелый исходник.
+          <span class="font-semibold text-emerald-300">Нарезка на полноценные части (1–2 мин):</span> Видео делится подряд на части (`Часть 1`, `Часть 2`, `Часть 3`...) <span class="text-amber-300 font-semibold">длительностью строго от 1 до 2 минут со звуком</span>, субтитрами и срезом рекламных баннеров.
         </div>
       </div>
 
@@ -66,30 +66,21 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
-        <h2 class="text-base font-bold text-white mb-1">Закинуть видео с телефона</h2>
-        <p class="text-xs text-slate-400 mb-4">Любой размер (2+ часа) • Авто-субтитры и очистка баннеров</p>
+        <h2 class="text-base font-bold text-white mb-1">Закинуть серию / фильм / видео</h2>
+        <p class="text-xs text-slate-400 mb-4">Разделит всё видео на части по 1–2 минуты подряд</p>
         <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs shadow-lg shadow-cyan-500/25">
           <span>Выбрать видео из галереи</span>
         </div>
       </label>
 
-      <!-- Настройки автонарезки, субтитров и удаления баннеров -->
+      <!-- Настройки длины каждой части серии, субтитров и удаления баннеров -->
       <div class="rounded-2xl bg-slate-900/80 border border-white/10 p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-slate-300">Количество нарезок</span>
-          <select id="clipCountSelect" class="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/10 focus:outline-none">
-            <option value="3">3 лучших клипа</option>
-            <option value="5" selected>5 лучших клипов</option>
-            <option value="8">8 лучших клипов</option>
-            <option value="10">10 лучших клипов</option>
-          </select>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold text-slate-300">Длительность клипа</span>
-          <select id="clipDurationSelect" class="bg-slate-800 text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/10 focus:outline-none">
-            <option value="60-120" selected>1 – 2 минуты</option>
-            <option value="30-60">30 – 60 сек (Shorts/Reels)</option>
+          <span class="text-xs font-semibold text-slate-300">Длительность каждой части</span>
+          <select id="partDurationSelect" class="bg-slate-800 text-cyan-300 text-xs font-bold rounded-xl px-3 py-1.5 border border-cyan-500/30 focus:outline-none">
+            <option value="60">Ровно 1 минута (60 сек)</option>
+            <option value="90" selected>1 мин 30 сек (90 сек)</option>
+            <option value="120">Ровно 2 минуты (120 сек)</option>
           </select>
         </div>
 
@@ -103,7 +94,7 @@
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-white/5">
-          <span class="text-xs text-slate-300">Удаление рекламных баннеров (Smart Crop + Mask)</span>
+          <span class="text-xs text-slate-300">Срезать рекламные баннеры (Smart Crop)</span>
           <label class="inline-flex items-center cursor-pointer">
             <input id="removeBannersToggle" type="checkbox" checked class="sr-only peer" />
             <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:bg-emerald-500 relative transition">
@@ -113,17 +104,17 @@
         </div>
       </div>
 
-      <!-- Быстрый Демо-режим -->
+      <!-- Быстрый Демо-режим (настоящее видео на 6 частей по 1:30 мин) -->
       <button id="demoBtn" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-cyan-500/15 to-blue-500/15 hover:from-amber-500/25 hover:to-blue-500/25 active:scale-[0.99] border border-cyan-500/30 text-xs font-bold text-cyan-200 flex items-center justify-center gap-2 transition shadow-lg">
-        <span>⚡ Запустить демо-нарезку (с живыми субтитрами и без баннеров)</span>
+        <span>🎬 Открыть пример: Серия разделена на части по 1.5 мин</span>
       </button>
 
-      <!-- ПРОГРЕСС-БАР АВТОНАРЕЗКИ И УДАЛЕНИЯ ИСХОДНИКА -->
+      <!-- ПРОГРЕСС-БАР АВТОНАРЕЗКИ -->
       <div id="processCard" class="hidden rounded-3xl bg-slate-900 border border-cyan-500/30 p-5 space-y-4 shadow-2xl">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
-            <h3 id="processStage" class="text-sm font-bold text-white">Анализ видео и удаление баннеров...</h3>
+            <h3 id="processStage" class="text-sm font-bold text-white">Делим серию на части по 1–2 минуты...</h3>
           </div>
           <span id="processPercent" class="text-xs font-bold text-cyan-400">0%</span>
         </div>
@@ -133,7 +124,7 @@
         </div>
 
         <p id="processSubtext" class="text-xs text-slate-400 leading-relaxed">
-          ИИ срезает рекламные плашки, вшивает субтитры, генерирует описание и хештеги...
+          Создаем части со звуком, субтитрами, описанием и хештегами...
         </p>
 
         <video id="hiddenWorkerVideo" class="hidden" playsinline muted></video>
@@ -145,7 +136,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-white">Меню папок с нарезками</h2>
-          <p class="text-xs text-slate-400">Откройте папку для просмотра или удалите её в 1 тап</p>
+          <p class="text-xs text-slate-400">Откройте папку, чтобы смотреть все части по 1–2 минуты</p>
         </div>
         <span id="foldersCountBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">0 папок</span>
       </div>
@@ -155,7 +146,7 @@
 
   </main>
 
-  <!-- МОДАЛЬНОЕ ОКНО ОТКРЫТОЙ ПАПКИ С НАРЕЗКАМИ -->
+  <!-- МОДАЛЬНОЕ ОКНО ОТКРЫТОЙ ПАПКИ С ЧАСТЯМИ СЕРИИ -->
   <div id="folderModal" class="fixed inset-0 z-50 hidden bg-[#090d16] flex flex-col">
     <div class="px-4 py-3.5 bg-slate-900/95 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
       <button id="closeModalBtn" class="p-2 -ml-1 rounded-xl bg-white/5 text-slate-200 active:scale-95 flex items-center gap-1.5 text-xs font-semibold">
@@ -167,7 +158,7 @@
 
       <div class="flex-1 min-w-0 text-center">
         <h3 id="modalFolderTitle" class="text-sm font-bold text-white truncate">Название папки</h3>
-        <p id="modalFolderMeta" class="text-[11px] text-emerald-400">Оригинал удалён • Баннеры срезаны • Субтитры</p>
+        <p id="modalFolderMeta" class="text-[11px] text-emerald-400">Все части по 1–2 мин • Без баннеров • Субтитры</p>
       </div>
 
       <button id="deleteCurrentFolderBtn" class="p-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 active:scale-95 text-xs font-semibold flex items-center gap-1">
